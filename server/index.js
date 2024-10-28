@@ -1,32 +1,26 @@
 import { Server } from 'socket.io';
 
-import Connection from './database/db.js';
-
-import { getDocument, updateDocument } from './controller/document-controller.js'
-
-const PORT = process.env.PORT || 9000;
-
-Connection();
-
-const io = new Server(PORT, {
+const io = new Server(9000, {
     cors: {
-        origin: '',
+        origin: 'http://localhost:3000',
         methods: ['GET', 'POST']
     }
 });
 
 io.on('connection', socket => {
-    socket.on('get-document', async documentId => {
-        const document = await getDocument(documentId);
+    console.log('Connected to client');
+
+    socket.on('get-document', documentId => {
+        const data = ''  // Get your document data here
         socket.join(documentId);
-        socket.emit('load-document', document.data);
+        socket.emit('load-document', data);
+    });
 
-        socket.on('send-changes', delta => {
-            socket.broadcast.to(documentId).emit('receive-changes', delta);
-        })
+    socket.on('send-changes', delta => {
+        socket.broadcast.emit('receive-changes', delta);
+    });
 
-        socket.on('save-document', async data => {
-            await updateDocument(documentId, data);
-        })
-    })
+    socket.on('save-document', async data => {
+        // Save your document data here
+    });
 });
